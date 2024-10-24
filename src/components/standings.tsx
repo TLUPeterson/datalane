@@ -26,7 +26,6 @@ export function Standings() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulated data - replace with actual API call
     setDriverStandings([
       { position: 1, points: 51, wins: 2, driver: "Max Verstappen", constructor: "Red Bull Racing" },
       { position: 2, points: 47, wins: 0, driver: "Charles Leclerc", constructor: "Ferrari" },

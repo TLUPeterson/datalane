@@ -1,10 +1,10 @@
 "use client"
 
-import { Calendar, momentLocalizer, Event } from 'react-big-calendar'
+import { Calendar, momentLocalizer, Event, View } from 'react-big-calendar'
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import moment from 'moment'
 import { F1_SCHEDULE_2024 } from "@/lib/f1Schedule"
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Card } from "@/components/ui/card"
 import { RaceWeekend } from "@/lib/types"
 import { CalendarDays, Clock, Flag, Zap } from "lucide-react"
@@ -55,7 +55,10 @@ const formatSessionName = (session: string) => {
 
 export function RaceSchedule() {
   const [selectedRace, setSelectedRace] = useState<RaceWeekend | null>(null)
+  const [date, setDate] = useState(new Date())
+  const [view, setView] = useState<View>('month')
 
+  // Create events array outside of render to prevent unnecessary recreations
   const events: F1Event[] = Object.entries(F1_SCHEDULE_2024).map(([, race]) => ({
     title: race.name,
     start: new Date(race.startDate),
@@ -64,15 +67,19 @@ export function RaceSchedule() {
     resource: race,
   }))
 
-  const handleSelectEvent = (event: F1Event) => {
+  const handleSelectEvent = useCallback((event: F1Event) => {
     setSelectedRace(event.resource)
-  }
+  }, [])
 
-  const eventStyleGetter = (event: F1Event) => {
+  const handleNavigate = useCallback((newDate: Date) => {
+    setDate(newDate)
+  }, [])
+
+  const eventStyleGetter = useCallback((event: F1Event) => {
     const isSprintWeekend = event.resource.type === 'sprint'
     return {
       style: {
-        backgroundColor: isSprintWeekend ? '#f97316' : '#ef4444', // orange-500 for sprint, red-500 for normal
+        backgroundColor: isSprintWeekend ? '#f97316' : '#ef4444',
         borderRadius: '4px',
         opacity: 0.8,
         color: 'white',
@@ -80,21 +87,64 @@ export function RaceSchedule() {
         display: 'block',
       },
     }
-  }
+  }, [])
+
+  const SessionDetails = useCallback(({ race }: { race: RaceWeekend }) => (
+    <div className="space-y-4">
+      {Object.entries(race.sessions).map(([session, details]) => (
+        <div 
+          key={session} 
+          className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            {sessionIcons[session as keyof typeof sessionIcons]}
+            <h3 className="font-semibold">
+              {formatSessionName(session)}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <CalendarDays className="w-4 h-4" />
+            <span>{details.day}</span>
+            <Clock className="w-4 h-4 ml-2" />
+            <span>{details.time} GMT</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  ), [])
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="calendar-container">
         <Calendar<F1Event>
+          key={`calendar-${view}`} // Force remount when view changes
           localizer={localizer}
           events={events}
           startAccessor="start"
           endAccessor="end"
           style={{ height: 600 }}
           views={['month']}
+          date={date}
+          onNavigate={handleNavigate}
+          view={view}
+          onView={setView}
           onSelectEvent={handleSelectEvent}
           eventPropGetter={eventStyleGetter}
           className="bg-white/5 rounded-lg p-4"
+          popup
+          components={{
+            toolbar: props => (
+              <div className="rbc-toolbar">
+                <span className="rbc-btn-group">
+                  <button type="button" onClick={() => props.onNavigate('PREV')}>Back</button>
+                  <button type="button" onClick={() => props.onNavigate('TODAY')}>Today</button>
+                  <button type="button" onClick={() => props.onNavigate('NEXT')}>Next</button>
+                </span>
+                <span className="rbc-toolbar-label">{props.label}</span>
+                <span className="rbc-btn-group"></span>
+              </div>
+            ),
+          }}
         />
       </div>
 
@@ -113,30 +163,10 @@ export function RaceSchedule() {
                   {moment(selectedRace.startDate).format('MMM D')} - {moment(selectedRace.endDate).format('D, YYYY')}
                 </div>
               </div>
-              <div className="space-y-4">
-                {Object.entries(selectedRace.sessions).map(([session, details]) => (
-                  <div 
-                    key={session} 
-                    className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      {sessionIcons[session as keyof typeof sessionIcons]}
-                      <h3 className="font-semibold">
-                        {formatSessionName(session)}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <CalendarDays className="w-4 h-4" />
-                      <span>{details.day}</span>
-                      <Clock className="w-4 h-4 ml-2" />
-                      <span>{details.time} GMT</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <SessionDetails race={selectedRace} />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400 ">
+            <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <Flag className="w-12 h-12 mb-4 opacity-50" />
               <p>Select a race weekend to view session times</p>
             </div>

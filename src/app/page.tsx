@@ -3,6 +3,7 @@ import { LiveData } from "@/components/liveData"
 import { HistoricalData } from "@/components/historicalData"
 import { Standings } from "@/components/standings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LiveWeather } from "@/components/liveWeather"
 
 export default function Home() {
   return (
@@ -26,7 +27,7 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="live">
-                <LiveData />
+                <LiveWeather />
               </TabsContent>
 
               <TabsContent value="historical">
