@@ -24,8 +24,7 @@
     "react-dom": "^18",
     "recharts": "^2.13.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7",
-    "vanilla-calendar-pro": "^2.9.10"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20",

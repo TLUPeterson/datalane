@@ -10,7 +10,13 @@ import { RaceWeekend } from "@/lib/types"
 import { CalendarDays, Clock, Flag, Zap } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
-const localizer = momentLocalizer(moment)
+// For monday as first day of the week
+moment.updateLocale('en-gb', {
+  week: {
+    dow: 1,
+  },
+});
+const localizer = momentLocalizer(moment);
 
 interface F1Event extends Event {
   resource: RaceWeekend
@@ -130,7 +136,7 @@ export function RaceSchedule() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 ">
               <Flag className="w-12 h-12 mb-4 opacity-50" />
               <p>Select a race weekend to view session times</p>
             </div>

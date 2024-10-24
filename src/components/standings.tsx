@@ -62,7 +62,7 @@ export function Standings() {
                   key={driver.driver}
                   className="flex items-center gap-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-500 text-white font-bold">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#e10600] text-white font-bold">
                     {driver.position}
                   </div>
                   <div className="flex-1">
