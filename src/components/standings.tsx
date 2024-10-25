@@ -31,112 +31,30 @@ const teamColors: Record<string, string> = {
   "RB F1 Team": "bg-[#4733d9]",
   "Williams": "bg-[#0000ff]",
   "Sauber": "bg-[#09d708]",
-};
+}
 
 export function Standings() {
   const [driverStandings, setDriverStandings] = useState<Driver[]>([])
   const [constructorStandings, setConstructorStandings] = useState<Constructor[]>([])
   const [loading, setLoading] = useState(true)
 
-
-
   useEffect(() => {
-    const fetchDriverStandings = async () => {
+    const fetchStandings = async () => {
       try {
-        const response = await fetch(`http://ergast.com/api/f1/current/driverStandings`)
+        const response = await fetch('/api/standings')
         if (!response.ok) throw new Error('Failed to fetch standings data')
-        const xmlText = await response.text()
-        
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml")
-        
-        const drivers = Array.from(xmlDoc.getElementsByTagName("DriverStanding")).map(driverNode => ({
-          position: parseInt(driverNode.getAttribute("position") || "0"),
-          points: parseInt(driverNode.getAttribute("points") || "0"),
-          lastRacePoints: 0,
-          driver: driverNode.getElementsByTagName("Driver")[0].getElementsByTagName("FamilyName")[0].textContent || "",
-          constructor: driverNode.getElementsByTagName("Constructor")[0].getElementsByTagName("Name")[0].textContent || ""
-        }))
-
-        setDriverStandings(drivers)
+        const data = await response.json()
+        setDriverStandings(data.drivers)
+        setConstructorStandings(data.constructors)
       } catch (error) {
-        console.error('Failed to fetch standings data:', error)
+        console.error('Failed to fetch standings:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    const fetchConstructorStandings = async () => {
-      try {
-        const response = await fetch('http://ergast.com/api/f1/current/constructorStandings')
-        if (!response.ok) throw new Error('Failed to fetch constructor standings')
-        const xmlText = await response.text()
-  
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(xmlText, 'application/xml')
-        const constructors = Array.from(xmlDoc.getElementsByTagName('ConstructorStanding')).map(node => ({
-          position: parseInt(node.getAttribute('position') || '0'),
-          points: parseInt(node.getAttribute('points') || '0'),
-          lastRacePoints: 0,
-          name: node.getElementsByTagName('Name')[0].textContent || ''
-        }))
-  
-        setConstructorStandings(constructors)
-      } catch (error) {
-        console.error('Failed to fetch constructor standings:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    const fetchLastRaceResults = async () => {
-      try {
-        const response = await fetch('http://ergast.com/api/f1/current/last/results')
-        if (!response.ok) throw new Error('Failed to fetch last race results')
-        const xmlText = await response.text()
-        
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml")
-        
-        const results = Array.from(xmlDoc.getElementsByTagName("Result")).map(resultNode => ({
-          driver: resultNode.getElementsByTagName("Driver")[0].getElementsByTagName("FamilyName")[0].textContent || "",
-          points: parseInt(resultNode.getAttribute("points") || "0"),
-          constructor: resultNode.getElementsByTagName("Constructor")[0].getElementsByTagName("Name")[0].textContent || ""
-        }))
-
-        setDriverStandings((prevStandings) =>
-          prevStandings.map(driver => {
-            const lastRaceResult = results.find(result => result.driver === driver.driver)
-            return {
-              ...driver,
-              lastRacePoints: lastRaceResult ? lastRaceResult.points : 0,
-            }
-          })
-        )
-
-        setConstructorStandings((prevStandings) =>
-          prevStandings.map(constructor => {
-            const totalPoints = results
-              .filter(result => result.constructor === constructor.name)
-              .reduce((sum, result) => sum + result.points, 0)
-            return {
-              ...constructor,
-              lastRacePoints: totalPoints,
-            }
-          })
-        )
-      } catch (error) {
-        console.error('Failed to fetch last race results:', error)
-      }
-    }
-
-    fetchDriverStandings()
-    fetchConstructorStandings()
-    fetchLastRaceResults()
+    fetchStandings()
   }, [])
-
-  
-  
 
   if (loading) {
     return <div>Loading standings...</div>
