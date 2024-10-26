@@ -1,7 +1,7 @@
 "use client"
-import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useDataFetching } from "@/hooks/liveDataFetch"
 
 export interface RaceControlData {
   category: string
@@ -15,34 +15,20 @@ export interface RaceControlData {
 }
 
 export function RaceControlDataComponent() {
-  const [loading, setLoading] = useState(true)
-  const [raceControlData, setRaceControlData] = useState<RaceControlData[]>([])
+  const { data: raceControlData, loading } = useDataFetching<RaceControlData[]>({
+    url: 'https://api.openf1.org/v1/race_control?session_key=latest',
+    cacheKey: 'racecontrol',
+    cacheDuration: 10000, // caching for 10 seconds
+    pollInterval: 10000, // poll every 10 seconds
+    transformData: (data) => data.slice(-5) // Get 5 latest entries
+  })
 
-  useEffect(() => {
-    const fetchRaceControlData = async () => {
-      try {
-        const response = await fetch(`https://api.openf1.org/v1/race_control?session_key=latest`)
-        if (!response.ok) throw new Error("Failed to fetch race control data")
-        const result = await response.json()
-        setRaceControlData(result.slice(-5)) // Adjust to display latest 5 entries
-      } catch (error) {
-        console.error("Error fetching race control data:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchRaceControlData()
-    const interval = setInterval(fetchRaceControlData, 10000)
-    return () => clearInterval(interval)
-  }, [])
-
-  if (loading) return <Skeleton className="h-[400px] w-full bg-white/5" />
+  if (loading) return <Skeleton className="h-[400px] w-full bg-red/20" />
 
   return (
     <Card className="p-6 bg-white/5 border-white/10">
       <h2 className="text-2xl font-bold mb-6">Race Control Updates</h2>
-      {raceControlData.length > 0 ? (
+      {raceControlData ? (
         raceControlData.map((entry, index) => (
           <div key={index} className="mb-4">
             <p><strong>Category:</strong> {entry.category}</p>
