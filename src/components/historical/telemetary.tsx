@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ReferenceArea,
 } from 'recharts';
 import { Card } from '@/components/ui/card';
 import {
@@ -20,7 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { X, Loader2 } from 'lucide-react';
 
-// Types for API responses and component state
+// [Previous interface definitions remain the same...]
 interface Session {
   session_key: string;
   country_name: string;
@@ -43,6 +44,15 @@ interface TelemetryData {
   drs: number;
   gear: number;
   timestamp: Date;
+}
+
+interface ZoomState {
+  left: number | 'dataMin';
+  right: number | 'dataMax';
+  refAreaLeft: string;
+  refAreaRight: string;
+  top: number | 'dataMax';
+  bottom: number | 'dataMin';
 }
 
 const driversMap: Record<number, string> = {
@@ -93,6 +103,17 @@ const TelemetryAnalysis = () => {
   const [telemetryType, setTelemetryType] = useState<string>('speed');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isZooming, setIsZooming] = useState<boolean>(false);
+
+  // Zoom state
+  const [zoomState, setZoomState] = useState<ZoomState>({
+    left: 'dataMin',
+    right: 'dataMax',
+    refAreaLeft: '',
+    refAreaRight: '',
+    top: 'dataMax',
+    bottom: 'dataMin',
+  });
 
   const lineColors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6'];
 
@@ -129,6 +150,28 @@ const TelemetryAnalysis = () => {
     fetchLaps();
   }, [selectedSession, selectedDriver]);
 
+  // Effect to handle text selection during zooming
+  useEffect(() => {
+    if (isZooming) {
+      document.body.style.userSelect = 'none';
+      document.body.style.webkitUserSelect = 'none';
+      document.body.style.userSelect = 'none';
+      document.body.style.userSelect = 'none'; 
+    } else {
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+      document.body.style.userSelect = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+      document.body.style.userSelect = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isZooming]);
+
   const fetchLapTelemetry = async (lap: Lap): Promise<TelemetryData[]> => {
     setLoading(true);
     try {
@@ -141,7 +184,6 @@ const TelemetryAnalysis = () => {
 
       const data = await response.json();
 
-      // Normalize the distance values as percentages of lap completion (0-100)
       const processedData = data.map((point: any, index: number) => ({
         distance: (index / (data.length - 1)) * 100,
         speed: point.speed,
@@ -173,10 +215,42 @@ const TelemetryAnalysis = () => {
     setSelectedLaps(selectedLaps.filter((_, index) => index !== lapIndex));
   };
 
-  const formatLapTime = (duration: number) => {
-    const minutes = Math.floor(duration / 60);
-    const seconds = (duration % 60).toFixed(3);
-    return `${minutes}:${seconds.padStart(6, '0')}`;
+  // Updated zoom handling functions
+  const zoom = () => {
+    let { refAreaLeft, refAreaRight } = zoomState;
+    setIsZooming(false);
+    
+    if (refAreaLeft === refAreaRight || !refAreaRight) {
+      setZoomState({
+        ...zoomState,
+        refAreaLeft: '',
+        refAreaRight: '',
+      });
+      return;
+    }
+
+    // Ensure left is less than right
+    if (Number(refAreaLeft) > Number(refAreaRight)) {
+      [refAreaLeft, refAreaRight] = [refAreaRight, refAreaLeft];
+    }
+
+    setZoomState({
+      ...zoomState,
+      refAreaLeft: '',
+      refAreaRight: '',
+      left: Number(refAreaLeft),
+      right: Number(refAreaRight),
+    });
+  };
+
+  const zoomOut = () => {
+    setZoomState({
+      ...zoomState,
+      left: 'dataMin',
+      right: 'dataMax',
+      top: 'dataMax',
+      bottom: 'dataMin',
+    });
   };
 
   return (
@@ -271,14 +345,37 @@ const TelemetryAnalysis = () => {
                 Lap {lap.lap_number} <X className="ml-1" />
               </Button>
             ))}
+            <Button 
+              variant="outline" 
+              onClick={zoomOut}
+              className="ml-auto"
+            >
+              Reset Zoom
+            </Button>
           </div>
-          <LineChart width={800} height={400}>
+          <LineChart
+              width={800}
+              height={400}
+              onMouseDown={(e) => {
+                if (e && e.activeLabel) {
+                  setIsZooming(true);
+                  setZoomState({ ...zoomState, refAreaLeft: e.activeLabel.toString() });
+                }
+              }}
+              onMouseMove={(e) => {
+                if (e && e.activeLabel && zoomState.refAreaLeft) {
+                  setZoomState({ ...zoomState, refAreaRight: e.activeLabel.toString() });
+                }
+              }}
+              onMouseUp={zoom}
+            >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               type="number"
               dataKey="distance"
               label="Lap Progress (%)"
-              domain={[0, 100]}
+              domain={[zoomState.left, zoomState.right]}
+              allowDataOverflow
             />
             <YAxis label={telemetryType} />
             <Tooltip />
@@ -294,6 +391,13 @@ const TelemetryAnalysis = () => {
                 dot={false}
               />
             ))}
+            {zoomState.refAreaLeft && zoomState.refAreaRight ? (
+              <ReferenceArea
+                x1={zoomState.refAreaLeft}
+                x2={zoomState.refAreaRight}
+                strokeOpacity={0.3}
+              />
+            ) : null}
           </LineChart>
         </Card>
       )}
