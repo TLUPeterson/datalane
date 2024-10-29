@@ -20,8 +20,19 @@ export function RaceControlDataComponent() {
     cacheKey: 'racecontrol',
     cacheDuration: 10000, // caching for 10 seconds
     pollInterval: 10000, // poll every 10 seconds
-    transformData: (data) => data.slice(-5) // Get 5 latest entries
+    transformData: (data) => data.reverse()// Newest at top
   })
+  // Change message color if text contains one
+  const getMessageStyle = (message: string) => {
+    if (message.toLowerCase().includes("red")) return "text-red-500"
+    if (message.toLowerCase().includes("blue")) return "text-blue-500"
+    if (message.toLowerCase().includes("yellow")) return "text-yellow-500"
+    if (message.toLowerCase().includes("green")) return "text-green-500"
+    if (message.toLowerCase().includes("safety car")) return "text-red-500"
+    if (message.toLowerCase().includes("penalty")) return "text-[#f97316]"
+    if (message.toLowerCase().includes("investigation")) return "text-[#06b6d4]"
+    return "text-black" 
+  }
 
   if (loading) return <Skeleton className="h-[400px] w-full bg-red/20" />
 
@@ -32,7 +43,7 @@ export function RaceControlDataComponent() {
         raceControlData.map((entry, index) => (
           <div key={index} className="mb-4">
             <p><strong>Category:</strong> {entry.category}</p>
-            <p><strong>Message:</strong> {entry.message}</p>
+            <p className={getMessageStyle(entry.message)}><strong>Message:</strong> {entry.message}</p>
             <p><strong>Time:</strong> {new Date(entry.date).toLocaleTimeString()}</p>
           </div>
         ))

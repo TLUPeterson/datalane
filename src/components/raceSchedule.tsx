@@ -6,7 +6,7 @@ import moment from 'moment'
 import { F1_SCHEDULE_2024 } from "@/lib/f1Schedule"
 import { useState, useCallback } from 'react'
 import { Card } from "@/components/ui/card"
-import { RaceWeekend } from "@/lib/types"
+import { RaceWeekend } from "@/lib/f1Schedule"
 import { CalendarDays, Clock, Flag, Zap } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
@@ -94,7 +94,7 @@ export function RaceSchedule() {
       {Object.entries(race.sessions).map(([session, details]) => (
         <div 
           key={session} 
-          className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+          className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
         >
           <div className="flex items-center gap-2 mb-2">
             {sessionIcons[session as keyof typeof sessionIcons]}

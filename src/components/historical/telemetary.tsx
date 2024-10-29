@@ -25,7 +25,7 @@ interface Session {
   session_key: string;
   country_name: string;
   session_name: string;
-  date: string;
+  date_start: string;
 }
 
 interface Lap {
@@ -101,7 +101,9 @@ const TelemetryAnalysis = () => {
       try {
         const response = await fetch('https://api.openf1.org/v1/sessions?year=2024');
         const data: Session[] = await response.json();
-        const sortedData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort newest first
+        const sortedData = data.sort((a, b) => 
+          new Date(b.date_start).getTime() - new Date(a.date_start).getTime()
+        );
         setSessions(sortedData);
       } catch (err) {
         setError('Failed to fetch sessions');

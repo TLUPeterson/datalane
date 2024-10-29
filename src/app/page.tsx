@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#fffff] text-[#1F1235] font-mono">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-2">
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
           Datalane
         </h1>

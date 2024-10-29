@@ -73,21 +73,21 @@ export function DriverPositionsComponent() {
     <Card className="p-6 bg-white/5 border-white/10">
       <h2 className="text-2xl font-bold mb-6">Current Positions</h2>
       {positionsData && positionsData.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {positionsData.map((driver) => (
             <div 
               key={driver.driver_number}
-              className="p-4 bg-white/5 rounded-lg flex items-center justify-between"
+              className="p-4 bg-white/5 rounded-lg flex items-center justify-between pr-[50%]"
             >
               <span className="text-2xl font-bold text-gray-400">
                 P{driver.position}
               </span>
               <div className="text-lg font-semibold">
-                #{driver.driver_number} - {driversMap[driver.driver_number] || "Unknown Driver"}
+                {driversMap[driver.driver_number] || "Unknown Driver"} #{driver.driver_number}
               </div>
-              <span className="text-sm text-gray-400">
+              {/* <span className="text-sm text-gray-400">
                 {new Date(driver.date).toLocaleTimeString()}
-              </span>
+              </span> */}
             </div>
           ))}
         </div>
