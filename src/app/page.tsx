@@ -1,6 +1,7 @@
 import { RaceSchedule } from "@/components/raceSchedule"
 import { LiveData } from "@/components/liveData"
-import { HistoricalData } from "@/components/historicalData"
+//import  HistoricalData  from "@/components/historicalData"
+import TelemetryDashboard from "@/components/historical/telemetary"
 import { Standings } from "@/components/standings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -30,7 +31,7 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="historical">
-                <HistoricalData />
+                <TelemetryDashboard />
               </TabsContent>
             </Tabs>
           </div>

@@ -21,7 +21,7 @@ const DUMMY_DATA = [
   { lap: 5, time: 80.4, tyre: "Soft" },
 ]
 
-export function HistoricalData() {
+export default function HistoricalData() {
   const [category, setCategory] = useState("lapTimes")
   
   return (
