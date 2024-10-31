@@ -90,7 +90,7 @@ export function RaceSchedule() {
   }, [])
 
   const SessionDetails = useCallback(({ race }: { race: RaceWeekend }) => (
-    <div className="space-y-4">
+    <div className="space-y-4 ">
       {Object.entries(race.sessions).map(([session, details]) => (
         <div 
           key={session} 

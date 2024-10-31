@@ -3,10 +3,10 @@ import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { WeatherDataComponent } from "@/components/live/weather"
 import { RaceControlDataComponent } from "@/components/live/raceControls"
-import { DriverPositionsComponent } from "@/components/live/driverspos"
+import  DriverPositionsComponent  from "@/components/live/driverspos"
 
 export function LiveData() {
-  const [category, setCategory] = useState("weather")
+  const [category, setCategory] = useState("driverspos")
 
   return (
       <div>

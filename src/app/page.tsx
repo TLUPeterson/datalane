@@ -4,14 +4,19 @@ import { LiveData } from "@/components/liveData"
 import TelemetryDashboard from "@/components/historical/telemetary"
 import { Standings } from "@/components/standings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import localFont from 'next/font/local'
+
+const montserratAlt1 = localFont({ src:'./fonts/MontserratAlt1-SemiBold.woff2'})
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#fffff] text-[#1F1235] font-mono">
-      <div className="container mx-auto px-4 py-2">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-          Datalane
-        </h1>
+      <div className="container mx-auto px-4 py-2 ">
+      <h1 className="text-4xl font-bold mb-8 text-center text-transparent max-w-[75%] sm:max-w-[25%] mx-auto">
+        <div className={`${montserratAlt1.className} bg-clip-text bg-gradient-to-r from-orange-500 to-green-500`}>
+          DATALANE
+        </div>
+      </h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
