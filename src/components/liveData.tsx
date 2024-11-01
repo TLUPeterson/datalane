@@ -6,7 +6,7 @@ import { RaceControlDataComponent } from "@/components/live/raceControls"
 import  DriverPositionsComponent  from "@/components/live/driverspos"
 
 export function LiveData() {
-  const [category, setCategory] = useState("driverspos")
+  const [category, setCategory] = useState("racecontrol")
 
   return (
       <div>

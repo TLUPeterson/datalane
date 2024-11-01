@@ -3,6 +3,7 @@
 import { Calendar, momentLocalizer, Event, View } from 'react-big-calendar'
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import moment from 'moment'
+import 'moment-timezone'
 import { F1_SCHEDULE_2024 } from "@/lib/f1Schedule"
 import { useState, useCallback } from 'react'
 import { Card } from "@/components/ui/card"
@@ -53,6 +54,20 @@ const formatSessionName = (session: string) => {
   }
 }
 
+// Convert EET time to local time
+const convertToLocalTime = (day: string, time: string, year: number) => {
+  // Create a moment object in EET timezone
+  const eetTime = moment.tz(`${day} ${time}`, 'HH:mm', 'EET')
+  // Convert to local timezone
+  const localTime = eetTime.clone().tz(moment.tz.guess())
+  
+  return {
+    day: localTime.format('MMM D'),
+    time: localTime.format('HH:mm'),
+    timezone: moment.tz.guess()
+  }
+}
+
 export function RaceSchedule() {
   const [selectedRace, setSelectedRace] = useState<RaceWeekend | null>(null)
   const [date, setDate] = useState(new Date())
@@ -89,35 +104,45 @@ export function RaceSchedule() {
     }
   }, [])
 
-  const SessionDetails = useCallback(({ race }: { race: RaceWeekend }) => (
-    <div className="space-y-4 ">
-      {Object.entries(race.sessions).map(([session, details]) => (
-        <div 
-          key={session} 
-          className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            {sessionIcons[session as keyof typeof sessionIcons]}
-            <h3 className="font-semibold">
-              {formatSessionName(session)}
-            </h3>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            <CalendarDays className="w-4 h-4" />
-            <span>{details.day}</span>
-            <Clock className="w-4 h-4 ml-2" />
-            <span>{details.time} GMT</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  ), [])
+  const SessionDetails = useCallback(({ race }: { race: RaceWeekend }) => {
+    // Extract year from race startDate
+    const raceYear = new Date(race.startDate).getFullYear()
+    
+    return (
+      <div className="space-y-4">
+        {Object.entries(race.sessions).map(([session, details]) => {
+          const localTime = convertToLocalTime(details.day, details.time, raceYear)
+          
+          return (
+            <div 
+              key={session} 
+              className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {sessionIcons[session as keyof typeof sessionIcons]}
+                <h3 className="font-semibold">
+                  {formatSessionName(session)}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <CalendarDays className="w-4 h-4" />
+                <span>{localTime.day}</span>
+                <Clock className="w-4 h-4 ml-2" />
+                <span>{localTime.time}</span>
+                <span className="ml-1">({localTime.timezone})</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }, [])
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="calendar-container">
         <Calendar<F1Event>
-          key={`calendar-${view}`} // Force remount when view changes
+          key={`calendar-${view}`}
           localizer={localizer}
           events={events}
           startAccessor="start"
