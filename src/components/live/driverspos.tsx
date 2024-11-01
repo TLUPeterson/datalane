@@ -158,6 +158,7 @@ function useStartingPositions(currentSession: SessionInfo | null) {
   return qualiData || [];
 }
 
+
 function DriverPositionsComponent() {
   const { data: sessionData } = useDataFetching<SessionInfo[]>({
     url: 'https://api.openf1.org/v1/sessions?session_key=latest',
@@ -230,7 +231,7 @@ function DriverPositionsComponent() {
         <h2 className="text-2xl font-bold mb-6">Race Tracker</h2>
         <div className="space-y-2">
           {[...Array(20)].map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full bg-white/5" />
+            <Skeleton key={i} className="h-16 w-full bg-[#FF9B99]/50" />
           ))}
         </div>
       </Card>

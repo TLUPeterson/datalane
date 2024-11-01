@@ -24,8 +24,16 @@ export function useDataFetching<T>({
 }: FetchConfig) {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<T | null>(null)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
+    // Don't fetch if URL is empty
+    if (!url) {
+      setLoading(false)
+      setData(null)
+      return
+    }
+
     const fetchData = async () => {
       // Check cache first
       const cachedEntry = globalCache[cacheKey]
@@ -41,9 +49,26 @@ export function useDataFetching<T>({
       // Fetch new data if cache is expired or empty
       try {
         const response = await fetch(url)
-        if (!response.ok) throw new Error(`Failed to fetch ${cacheKey} data`)
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type')
+        if (!contentType?.includes('application/json')) {
+          throw new Error(`Expected JSON response but got ${contentType}`)
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         let result = await response.json()
         
+        // Check if result is empty or invalid
+        if (!result || (Array.isArray(result) && result.length === 0)) {
+          setData(null)
+          setLoading(false)
+          return
+        }
+
         // Apply transformation if provided
         if (transformData) {
           result = transformData(result)
@@ -56,8 +81,11 @@ export function useDataFetching<T>({
         }
         
         setData(result)
+        setError(null)
       } catch (error) {
         console.error(`Error fetching ${cacheKey} data:`, error)
+        setError(error instanceof Error ? error : new Error('Failed to fetch data'))
+        setData(null)
       } finally {
         setLoading(false)
       }
@@ -68,5 +96,5 @@ export function useDataFetching<T>({
     return () => clearInterval(interval)
   }, [url, cacheKey, cacheDuration, pollInterval, transformData])
 
-  return { data, loading }
+  return { data, loading, error }
 }

@@ -34,7 +34,7 @@ export function RaceControlDataComponent() {
     return "text-black" 
   }
 
-  if (loading) return <Skeleton className="h-[400px] w-full bg-red/20" />
+  if (loading) return <Skeleton className="h-[400px] w-full bg-[#FF9B99]/50"/>
 
   return (
     <Card className="p-6 bg-white/5 border-white/10">
