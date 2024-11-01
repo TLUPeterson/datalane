@@ -55,11 +55,27 @@ const formatSessionName = (session: string) => {
 }
 
 // Convert EET time to local time
-const convertToLocalTime = (day: string, time: string, year: number) => {
-  // Create a moment object in EET timezone
-  const eetTime = moment.tz(`${day} ${time}`, 'HH:mm', 'EET')
+const convertToLocalTime = (startDate: string, time: string, day: string) => {
+  // Get the start date as a moment object
+  const baseDate = moment(startDate)
+  
+  // Map day names to offsets from the start date
+  const dayOffsets: { [key: string]: number } = {
+    'Friday': 0,
+    'Saturday': 1,
+    'Sunday': 2
+  }
+  
+  // Create a new date for the session
+  const sessionDate = baseDate.clone().add(dayOffsets[day], 'days')
+  
+  // Set the time
+  const [hours, minutes] = time.split(':')
+  sessionDate.hours(parseInt(hours))
+  sessionDate.minutes(parseInt(minutes))
+  
   // Convert to local timezone
-  const localTime = eetTime.clone().tz(moment.tz.guess())
+  const localTime = sessionDate.clone().tz(moment.tz.guess())
   
   return {
     day: localTime.format('MMM D'),
@@ -73,7 +89,6 @@ export function RaceSchedule() {
   const [date, setDate] = useState(new Date())
   const [view, setView] = useState<View>('month')
 
-  // Create events array outside of render to prevent unnecessary recreations
   const events: F1Event[] = Object.entries(F1_SCHEDULE_2024).map(([, race]) => ({
     title: race.name,
     start: new Date(race.startDate),
@@ -105,13 +120,26 @@ export function RaceSchedule() {
   }, [])
 
   const SessionDetails = useCallback(({ race }: { race: RaceWeekend }) => {
-    // Extract year from race startDate
-    const raceYear = new Date(race.startDate).getFullYear()
-    
+    // Sort sessions by day and time
+    const sortedSessions = Object.entries(race.sessions)
+      .sort(([, a], [, b]) => {
+        // First sort by day
+        const days = ['Friday', 'Saturday', 'Sunday']
+        const dayDiff = days.indexOf(a.day) - days.indexOf(b.day)
+        if (dayDiff !== 0) return dayDiff
+        
+        // If same day, sort by time
+        return a.time.localeCompare(b.time)
+      })
+
     return (
       <div className="space-y-4">
-        {Object.entries(race.sessions).map(([session, details]) => {
-          const localTime = convertToLocalTime(details.day, details.time, raceYear)
+        {sortedSessions.map(([session, details]) => {
+          const localTime = convertToLocalTime(
+            race.startDate,
+            details.time,
+            details.day
+          )
           
           return (
             <div 
