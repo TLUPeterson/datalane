@@ -22,8 +22,8 @@ export function WeatherDataComponent() {
   const { data: weatherData, loading } = useDataFetching<WeatherData>({
     url: 'https://api.openf1.org/v1/weather?session_key=latest',
     cacheKey: 'weather',
-    cacheDuration: 60000, // 1 minute
-    pollInterval: 60000,
+    cacheDuration: 120000, // 2 minutes
+    pollInterval: 120000,
     transformData: (data) => data.slice(-1)[0] // Get latest entry
   })
 

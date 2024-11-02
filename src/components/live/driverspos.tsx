@@ -170,15 +170,15 @@ function DriverPositionsComponent() {
   const { data: positionsData, loading } = useDataFetching<DriverPosition[]>({
     url: 'https://api.openf1.org/v1/position?session_key=latest',
     cacheKey: 'current_positions',
-    cacheDuration: 10000,
-    pollInterval: 10000
+    cacheDuration: 12000,
+    pollInterval: 12000
   });
 
   const { data: stintsData } = useDataFetching<StintInfo[]>({
     url: 'https://api.openf1.org/v1/stints?session_key=latest',
     cacheKey: 'current_stints',
-    cacheDuration: 10000,
-    pollInterval: 10000
+    cacheDuration: 15000,
+    pollInterval: 15000
   });
 
   const currentSession = sessionData?.[0] || null;
