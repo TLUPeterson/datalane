@@ -19,7 +19,7 @@ interface SessionInfo {
   meeting_key: number;
 }
 
-type TyreCompound = 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET';
+type TyreCompound = 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET' | null;
 
 interface StintInfo {
   compound: TyreCompound;
@@ -55,7 +55,7 @@ const driversMap: { [key: number]: string } = {
   81: "Oscar Piastri"
 };
 
-const colors: { [K in TyreCompound]: string } = {
+const colors: { [K in Exclude<TyreCompound, null>]: string } = {
   SOFT: "bg-red-500",
   MEDIUM: "bg-yellow-500",
   HARD: "bg-white",
@@ -63,7 +63,10 @@ const colors: { [K in TyreCompound]: string } = {
   WET: "bg-blue-500"
 };
 
+
 const TyreIndicator = ({ compound }: { compound: TyreCompound }) => {
+  if (!compound) return null;
+  
   return (
     <div className="flex items-center space-x-1">
       <div className={`w-3 h-3 border-black border-2 rounded-full ${colors[compound] || "text-gray-500"}`}/>
@@ -216,9 +219,12 @@ function DriverPositionsComponent() {
     
     const stintMap = new Map<number, StintInfo>();
     stintsData.forEach(stint => {
-      const existingStint = stintMap.get(stint.driver_number);
-      if (!existingStint || stint.stint_number > existingStint.stint_number) {
-        stintMap.set(stint.driver_number, stint);
+      // Add null check for compound
+      if (stint && typeof stint.driver_number === 'number') {
+        const existingStint = stintMap.get(stint.driver_number);
+        if (!existingStint || stint.stint_number > existingStint.stint_number) {
+          stintMap.set(stint.driver_number, stint);
+        }
       }
     });
     
